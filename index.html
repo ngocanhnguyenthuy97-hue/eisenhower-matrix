@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eisenhower Matrix</title>
+  <style>
+    :root {
+      --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+      --bg-body: #f3f4f6;
+      --bg-card: #ffffff;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --primary: #6366f1;
+
+      /* Pastel Quadrant Colors */
+      --q1-bg: #fee2e2;
+      --q1-border: #fca5a5;
+      --q1-text: #991b1b;
+      --q2-bg: #d1fae5;
+      --q2-border: #6ee7b7;
+      --q2-text: #065f46;
+      --q3-bg: #fef3c7;
+      --q3-border: #fcd34d;
+      --q3-text: #92400e;
+      --q4-bg: #e0f2fe;
+      --q4-border: #7dd3fc;
+      --q4-text: #075985;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background-color: var(--bg-body);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Input Section */
+    .input-container {
+      background: var(--bg-card);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 32px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-sizing: border-box;
+    }
+
+    input,
+    select {
+      padding: 12px 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-family: var(--font-main);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    #task-title {
+      flex: 2;
+      min-width: 200px;
+    }
+
+    #task-deadline {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    #task-quadrant {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    button {
+      padding: 12px 24px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    button:hover {
+      background-color: #4f46e5;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    /* Matrix Grid */
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .quadrant {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 20px;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      border-top: 8px solid transparent;
+    }
+
+    .q1-header {
+      border-color: var(--q1-border);
+    }
+
+    .q2-header {
+      border-color: var(--q2-border);
+    }
+
+    .q3-header {
+      border-color: var(--q3-border);
+    }
+
+    .q4-header {
+      border-color: var(--q4-border);
+    }
+
+    .quadrant-header {
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .quadrant-title {
+      font-weight: 700;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quadrant-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* Task Cards */
+    .task-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .task-card {
+      background: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid #f3f4f6;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .task-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .task-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .task-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    /* Quadrant specific task styling */
+    .Q1 .task-card {
+      border-left: 4px solid var(--q1-border);
+      background: #fff5f5;
+    }
+
+    .Q2 .task-card {
+      border-left: 4px solid var(--q2-border);
+      background: #f0fdf4;
+    }
+
+    .Q3 .task-card {
+      border-left: 4px solid var(--q3-border);
+      background: #fffbeb;
+    }
+
+    .Q4 .task-card {
+      border-left: 4px solid var(--q4-border);
+      background: #f0f9ff;
+    }
+
+    .Q1 .badge {
+      background: var(--q1-bg);
+      color: var(--q1-text);
+    }
+
+    .Q2 .badge {
+      background: var(--q2-bg);
+      color: var(--q2-text);
+    }
+
+    .Q3 .badge {
+      background: var(--q3-bg);
+      color: var(--q3-text);
+    }
+
+    .Q4 .badge {
+      background: var(--q4-bg);
+      color: var(--q4-text);
+    }
+
+    @media (max-width: 768px) {
+      .matrix-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- Task Input -->
+  <div class="input-container">
+    <input type="text" id="task-title" placeholder="Type a new task...">
+    <input type="datetime-local" id="task-deadline">
+    <select id="task-quadrant">
+      <option value="Q1">Q1: Urgent & Important</option>
+      <option value="Q2">Q2: Not Urgent & Important</option>
+      <option value="Q3">Q3: Urgent & Not Important</option>
+      <option value="Q4">Q4: Not Urgent & Not Important</option>
+    </select>
+    <button onclick="handleAddTask()">Add Task</button>
+  </div>
+
+  <!-- Matrix -->
+  <div class="matrix-grid">
+    <!-- Q1 -->
+    <div class="quadrant Q1 q1-header">
+      <div class="quadrant-header">
+        <span class="quadrant-title" style="color: var(--q1-text)">Do Now</span>
+        <span class="quadrant-desc">Urgent & Important</span>
+      </div>
+      <div class="task-list" id="list-Q1"></div>
+    </div>
+    <!-- Q2 -->
+    <div class="quadrant Q2 q2-header">
+      <div class="quadrant-header">
+        <span class="quadrant-title" style="color: var(--q2-text)">Schedule</span>
+        <span class="quadrant-desc">Important, Not Urgent</span>
+      </div>
+      <div class="task-list" id="list-Q2"></div>
+    </div>
+    <!-- Q3 -->
+    <div class="quadrant Q3 q3-header">
+      <div class="quadrant-header">
+        <span class="quadrant-title" style="color: var(--q3-text)">Delegate</span>
+        <span class="quadrant-desc">Urgent, Not Important</span>
+      </div>
+      <div class="task-list" id="list-Q3"></div>
+    </div>
+    <!-- Q4 -->
+    <div class="quadrant Q4 q4-header">
+      <div class="quadrant-header">
+        <span class="quadrant-title" style="color: var(--q4-text)">Delete</span>
+        <span class="quadrant-desc">Not Urgent & Not Important</span>
+      </div>
+      <div class="task-list" id="list-Q4"></div>
+    </div>
+  </div>
+
+  <script>
+    // Data Model & State
+    const STORAGE_KEY = 'eisenhower_tasks';
+    let tasks = [];
+
+    // Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTasks();
+      renderTasks();
+      requestNotificationPermission();
+
+      // Check reminders every 60 seconds
+      setInterval(checkReminders, 60000);
+    });
+
+    function requestNotificationPermission() {
+      if ("Notification" in window && Notification.permission !== "granted") {
+        Notification.requestPermission();
+      }
+    }
+
+    // Logic
+    function loadTasks() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          tasks = JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse tasks", e);
+          tasks = [];
+        }
+      }
+    }
+
+    function saveTasks() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    function handleAddTask() {
+      const titleInput = document.getElementById('task-title');
+      const deadlineInput = document.getElementById('task-deadline');
+      const quadrantInput = document.getElementById('task-quadrant');
+
+      const title = titleInput.value.trim();
+      const deadline = deadlineInput.value;
+      const quadrant = quadrantInput.value;
+
+      if (!title || !deadline) {
+        alert("Please provide both a title and a deadline.");
+        return;
+      }
+
+      const newTask = {
+        id: crypto.randomUUID(),
+        title: title,
+        deadline: deadline, // ISO string
+        quadrant: quadrant,
+        reminded: false
+      };
+
+      tasks.push(newTask);
+      saveTasks();
+      renderTasks();
+
+      // Reset form
+      titleInput.value = '';
+      deadlineInput.value = '';
+      quadrantInput.value = 'Q1';
+    }
+
+    function renderTasks() {
+      // Clear all lists
+      ['Q1', 'Q2', 'Q3', 'Q4'].forEach(q => {
+        document.getElementById(`list-${q}`).innerHTML = '';
+      });
+
+      // Sort tasks by deadline
+      const sortedTasks = [...tasks].sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+      sortedTasks.forEach(task => {
+        const list = document.getElementById(`list-${task.quadrant}`);
+        if (list) {
+          const taskEl = document.createElement('div');
+          taskEl.className = 'task-card';
+
+          const dateObj = new Date(task.deadline);
+          const dateStr = dateObj.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+          taskEl.innerHTML = `
+                        <div class="task-title">${escapeHtml(task.title)}</div>
+                        <div class="task-meta">
+                            <span>due ${dateStr}</span>
+                            <span class="badge">${task.quadrant}</span>
+                        </div>
+                    `;
+          list.appendChild(taskEl);
+        }
+      });
+    }
+
+    function checkReminders() {
+      if (Notification.permission !== "granted") return;
+
+      const now = new Date();
+      let changed = false;
+
+      tasks.forEach(task => {
+        if (task.reminded) return;
+
+        const deadline = new Date(task.deadline);
+        const reminderTime = new Date(deadline.getTime() - 15 * 60000); // 15 mins before
+
+        // Trigger if we are past the reminder time but strictly before the deadline (or close to it)
+        // Logic: Trigger if now >= reminderTime. 
+        // To avoid triggering way too late for old tasks, maybe add a window, but requirement says "trigger exactly 15 mins before" (implies check).
+        // Given setInterval is 60s, we check if now >= reminderTime.
+
+        if (now >= reminderTime) {
+          new Notification("Eisenhower Matrix Reminder", {
+            body: `Task "${task.title}" is due in 15 minutes!`,
+            icon: "" // Optional icon could go here
+          });
+
+          task.reminded = true;
+          changed = true;
+        }
+      });
+
+      if (changed) {
+        saveTasks();
+      }
+    }
+
+    // Utils
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+
+</html>
